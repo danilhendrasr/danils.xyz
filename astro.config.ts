@@ -57,7 +57,7 @@ const render = (title: string, subtitle: string, date: string) => ({
             {
               type: "span",
               props: {
-                children: "dhsrlab",
+                children: "dhsrlab.com",
               },
             },
           ],
@@ -78,6 +78,7 @@ const render = (title: string, subtitle: string, date: string) => ({
           style: {
             fontSize: "2rem",
             opacity: 0.75,
+            marginTop: 20,
           },
           children: subtitle,
         },
