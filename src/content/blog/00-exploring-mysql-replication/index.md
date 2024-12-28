@@ -3,9 +3,10 @@ title: "Exploring MySQL Replication"
 description: "From simple replication, chained replication, to highly-available group replication"
 date: "2024-05-19"
 tags:
-  - database
-  - sql
-  - mysql
+  - Software Engineering
+  - Database
+  - SQL
+  - MySQL
 ---
 
 ## Background
