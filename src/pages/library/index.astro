@@ -1,0 +1,56 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import { BLOG } from "@consts";
+import { Image } from "astro:assets";
+
+const data = (await getCollection("library"))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title={BLOG.TITLE} description={BLOG.DESCRIPTION}>
+  <Container>
+    <div class="mb-10">
+      <h1 class="text-2xl font-bold">📚 Library</h1>
+      <span>
+        Books that I've read cover-to-cover, found valuable, and would recommend
+        to people.
+      </span>
+    </div>
+
+    <aside data-pagefind-ignore>
+      <div class="space-y-10">
+        <div class="grid grid-cols-2 gap-x-2 gap-y-6 md:grid-cols-3">
+          {
+            data.map((libraryItem) => (
+              <section class="animate flex w-fit flex-col gap-y-2 rounded-lg border p-5 hover:border-black/15 hover:bg-black/5 hover:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white md:max-w-48">
+                <Image
+                  class="w-24 rounded-md object-cover"
+                  src={libraryItem.data.cover}
+                  alt={`${libraryItem.data.title}'s cover`}
+                  height={300}
+                  width={200}
+                />
+                <p class="text-left font-semibold text-black dark:text-white">
+                  {libraryItem.data.title}
+                </p>
+                <span class="text-left text-sm">{libraryItem.data.author}</span>
+                <div class="mt-1 flex flex-wrap gap-2">
+                  {libraryItem.data.tags?.slice(0, 3).map((tag) => {
+                    return (
+                      <span class="h-fit rounded-full bg-black/5 px-2 py-1 text-xs text-black dark:bg-white/5 dark:text-white">
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </section>
+            ))
+          }
+        </div>
+      </div>
+    </aside>
+  </Container>
+</Layout>
