@@ -45,7 +45,7 @@ const render = (title: string, subtitle: string, date: string) => ({
             {
               type: "img",
               props: {
-                src: "https://dhsrlab.com/self-portrait.png",
+                src: "https://danils.xyz/self-portrait.png",
                 width: 50,
                 height: 50,
                 style: {
@@ -57,7 +57,7 @@ const render = (title: string, subtitle: string, date: string) => ({
             {
               type: "span",
               props: {
-                children: "dhsrlab",
+                children: "danil's xyz",
               },
             },
           ],
@@ -156,7 +156,7 @@ const og = (): AstroIntegration => ({
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://dhsrlab.com",
+  site: "https://danils.xyz",
   integrations: [tailwind(), sitemap(), mdx(), pagefind(), og()],
   markdown: {
     shikiConfig: {

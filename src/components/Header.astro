@@ -1,13 +1,14 @@
 ---
 import Container from "@components/Container.astro";
 import Link from "@components/Link.astro";
+import { SITE } from "@consts";
 ---
 
 <header transition:persist>
   <Container>
     <div class="flex flex-wrap justify-between gap-y-2">
       <Link href="/" underline={false}>
-        <div class="font-semibold">dhsrlab</div>
+        <div class="font-semibold">{SITE.TITLE}</div>
       </Link>
       <nav class="flex items-center gap-1 text-sm">
         <Link href="/blog">blog</Link>

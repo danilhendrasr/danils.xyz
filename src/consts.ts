@@ -1,9 +1,9 @@
 import type { Metadata, Site, Socials } from "@types";
 
 export const SITE: Site = {
-  TITLE: "dhsrlab",
+  TITLE: "danil's xyz",
   DESCRIPTION: "A software engineer based in Surabaya, Indonesia.",
-  EMAIL: "hello@dhsrlab.com",
+  EMAIL: "danilhendrasr@gmail.com",
   NUM_POSTS_ON_HOMEPAGE: 5,
   NUM_PROJECTS_ON_HOMEPAGE: 3,
 };
