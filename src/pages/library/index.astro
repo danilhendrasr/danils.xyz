@@ -25,9 +25,9 @@ const data = (await getCollection("library"))
         <div class="grid grid-cols-2 gap-x-2 gap-y-6 md:grid-cols-3">
           {
             data.map((libraryItem) => (
-              <section class="animate flex w-fit flex-col gap-y-2 rounded-lg border p-5 hover:border-black/15 hover:bg-black/5 hover:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white md:max-w-48">
+              <section class="animate flex w-fit min-w-full flex-col gap-y-2 rounded-lg border p-5 hover:border-black/15 hover:bg-black/5 hover:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white md:max-w-48">
                 <Image
-                  class="w-24 rounded-md object-cover"
+                  class="rounded-md object-cover"
                   src={libraryItem.data.cover}
                   alt={`${libraryItem.data.title}'s cover`}
                   height={300}
