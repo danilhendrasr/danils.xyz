@@ -57,7 +57,7 @@ const render = (title: string, subtitle: string, date: string) => ({
             {
               type: "span",
               props: {
-                children: "dhsrlab.com",
+                children: "dhsrlab",
               },
             },
           ],
