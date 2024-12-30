@@ -18,6 +18,11 @@ export const BLOG: Metadata = {
   DESCRIPTION: "A collection of articles on topics I am passionate about.",
 };
 
+export const LIBRARY: Metadata = {
+  TITLE: "Library",
+  DESCRIPTION: "Books I have read and would recommend.",
+};
+
 export const PROJECTS: Metadata = {
   TITLE: "Projects",
   DESCRIPTION:

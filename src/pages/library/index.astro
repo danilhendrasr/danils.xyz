@@ -2,7 +2,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import Layout from "@layouts/Layout.astro";
 import Container from "@components/Container.astro";
-import { BLOG } from "@consts";
+import { LIBRARY } from "@consts";
 import { Image } from "astro:assets";
 
 const data = (await getCollection("library"))
@@ -10,7 +10,7 @@ const data = (await getCollection("library"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<Layout title={BLOG.TITLE} description={BLOG.DESCRIPTION}>
+<Layout title={LIBRARY.TITLE} description={LIBRARY.DESCRIPTION}>
   <Container>
     <div class="mb-10">
       <h1 class="text-2xl font-bold">📚 Library</h1>
