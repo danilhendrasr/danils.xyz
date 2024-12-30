@@ -23,8 +23,12 @@ const projects: CollectionEntry<"projects">[] = (
 <Layout title={HOME.TITLE} description={HOME.DESCRIPTION}>
   <Container>
     <aside data-pagefind-ignore>
-      <img src="/self-portrait.png" alt="" class="rounded-full w-52 h-52 mx-auto object-cover mb-10 border shadow-sm" />
-      <h1 class="font-semibold text-black dark:text-white text-lg">
+      <img
+        src="/self-portrait.png"
+        alt=""
+        class="mx-auto mb-10 h-52 w-52 rounded-full border object-cover shadow-sm backdrop-blur-sm backdrop-filter"
+      />
+      <h1 class="text-lg font-semibold text-black dark:text-white">
         Hi, I'm Danil! 👋
       </h1>
       <div class="space-y-16">
@@ -32,19 +36,22 @@ const projects: CollectionEntry<"projects">[] = (
           <article class="space-y-4">
             <span>
               <p>
-                I'm a software engineer based in Surabaya, Indonesia. I'm currently working at
-                <Link href="https://speechify.com">Speechify</Link>. Making people read more books 
-                in less time with our text-to-speech technology 📚 🎧.
+                I'm a software engineer based in Surabaya, Indonesia. I'm
+                currently working at
+                <Link href="https://speechify.com">Speechify</Link>. Making
+                people read more books in less time with our text-to-speech
+                technology 📚 🎧.
               </p>
               <p>
-                I write about life, books, tech, software engineering, and everything in between.
+                I write about life, books, tech, software engineering, and
+                everything in between.
               </p>
             </span>
             <span class="animate">
               <p>Get in touch with me or just say hi, find me below :)</p>
             </span>
           </article>
-          <ul class="not-prose flex flex-wrap gap-2 animate">
+          <ul class="not-prose animate flex flex-wrap gap-2">
             {
               SOCIALS.map((SOCIAL) => (
                 <li class="flex gap-x-2 text-nowrap">
