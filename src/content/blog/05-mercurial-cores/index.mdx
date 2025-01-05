@@ -64,12 +64,12 @@ level of fault-tolerance (which is the majority) operate under the assumption th
 the possibility of CPUs producing incorrect results are so minuscule that it's fine to assume
 that it basically never happens. But this discovery challenges my assumption.
 
-At a glance, I think the implications of this issue is quite serious. Data can be rendered permanently
+At a glance, the implications of this issue is quite serious. Data can be rendered permanently
 inaccessible, money can be lost, lives can be lost, and so on. But deeper look into the paper's references
 shows that this is quite a common knowledge among the hyperscalers. Facebook has their own paper
 on a similar issue titled ["Silent Data Corruptions at Scale"](https://arxiv.org/pdf/2102.11245).
-So now I'm wondering why this issue hasn't caused major problems in the industry yet.
-Though it has caused problems in Google's system, such as:
+So now I'm wondering why this issue (CPUs producing incorrect results) hasn't caused catastrophic incidence 
+in the industry yet. Though it has caused problems in Google's system, such as:
 1. Corruption affecting garbage collectors, causing live objects to be collected.
 2. Corruption affecting database indexes, leading to some queries being non-deterministically corrupted.
 3. Mutexes not functioning correctly causing application crashes.
