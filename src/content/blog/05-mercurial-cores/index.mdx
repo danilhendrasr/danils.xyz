@@ -15,24 +15,29 @@ notes on papers I read, so I figured I'd start with this one.
 
 ## Overview
 
-Google is running a massive-scale data-analysis pipeline. But one day
-they noticed that it starts giving incorrect results. Investigation results, suggests that it 
+Google is running a massive-scale data-analysis pipeline. One day
+they noticed that it starts giving incorrect results. Investigation result suggests that it 
 has something todo with a recent change that was shipped to a low-level library they're using 
 (they didn't mention what library, probably an internal library). While the change itself is correct, 
 it causes servers to make heavier use of certain instructions that were previously not often used 
 (they didn't mention specifically what's the instruction). 
-This somehow causes a small subset of machines to repeatedly produce incorrect results. 
+This somehow causes a small subset of the machines to repeatedly produce incorrect results. 
 
 Deeper investigation revealed that the real underlying issue is on the hardware, specifically from manufacturing 
-defects in the CPU chips. The defect causes one core in a multi-core chip to silently produce 
-incorrect computation results. They call this silent errors as "corrupt execution errors" or CEEs.
-The rate of incidence of which is higher than what the typical software engineers expected. 
-The authors don't disclosed the exact numbers due to business reasons, but they mentioned that it's 
-"a few mercurial cores per several thousand machines".
+defects in the CPU chips. The defect causes typically one of the cores in the CPU to silently produce 
+error in the form of incorrect computation results. These cores are called "mercurial cores", and the errors 
+are called "corrupt execution errors" or CEEs. 
+The authors didn't disclose the exact number of mercurial cores in their fleet due to business reasons,
+but they mentioned that it's "a few mercurial cores per several thousand machines" and that the rate
+of incidence of CEEs is higher what software engineers expected.
 
-The behavior of the defect is quite complex and interesting in my view. It happens non-deterministically, repeatedly, 
-intermittently, and it gets worse over time. The authors also mentioned that external factors such as temperature, voltage, 
-and frequency can influence the rate of incidence as well; They found that some CEE rates are very sensitive to frequency changes, 
+The behavior caused by the defect is quite complex and interesting in my view. Some mercurial cores don't 
+exhibit the issue at all until after a certain amount of time has passed since the chip was installed (can be years). 
+Typically only one core in a chip is affected.
+And the CEEs themselves happen non-deterministically, repeatedly, intermittently, and gets worse over time. 
+The authors also mentioned that external factors such as temperature, voltage, 
+and frequency can influence the rate of incidence as well; 
+They found that some CEE rates are very sensitive to frequency changes, 
 while others do not. They also found that lower frequencies sometimes increase the failure rate.
 
 ## Why It Happens
