@@ -71,6 +71,9 @@ const { Content, headings } = await render(post);
       <h1 class="animate text-3xl font-semibold text-black dark:text-white">
         {post.data.title}
       </h1>
+      <h3 class="animate">
+        {post.data.description}
+      </h3>
       {
         post.data.tags && post.data.tags?.length > 0 ? (
           <div class="animate flex gap-2 pt-1">

@@ -1,0 +1,105 @@
+---
+title: "Cores Gone Rogue"
+description: "Notes on Google's paper on mercurial cores."
+date: "2025-01-05"
+tags:
+  - Papers Notes
+---
+
+Today I read an interesting paper from Google engineers titled ["Cores that don't count"](https://research.google/pubs/cores-that-dont-count/).
+It's a paper about CPU cores that would produce incorrect computation results, causing serious problems for software systems.
+I found the paper quite interesting because of the implications of the discovery. And I've been wanting to start posting 
+notes on papers I read, so I figured I'd start with this one.
+
+--- 
+
+## Overview
+
+Google is running a massive-scale data-analysis pipeline. But one day
+they noticed that it starts giving incorrect results. Investigation results, suggests that it 
+has something todo with a recent change that was shipped to a low-level library they're using 
+(they didn't mention what library, probably an internal library). While the change itself is correct, 
+it causes servers to make heavier use of certain instructions that were previously not often used 
+(they didn't mention specifically what's the instruction). 
+This somehow causes a small subset of machines to repeatedly produce incorrect results. 
+
+Deeper investigation revealed that the real underlying issue is on the hardware, specifically from manufacturing 
+defects in the CPU chips. The defect causes one core in a multi-core chip to silently produce 
+incorrect computation results. They call this silent errors as "corrupt execution errors" or CEEs.
+The rate of incidence of which is higher than what the typical software engineers expected. 
+The authors don't disclosed the exact numbers due to business reasons, but they mentioned that it's 
+"a few mercurial cores per several thousand machines".
+
+The behavior of the defect is quite complex and interesting in my view. It happens non-deterministically, repeatedly, 
+intermittently, and it gets worse over time. The authors also mentioned that external factors such as temperature, voltage, 
+and frequency can influence the rate of incidence as well; They found that some CEE rates are very sensitive to frequency changes, 
+while others do not. They also found that lower frequencies sometimes increase the failure rate.
+
+## Why It Happens
+
+The authors don't have a definitive answer to why this happens. 
+But they posit that some or all of the following factors probably contributes to the issue:
+1. Steady increase in CPU scale and complexity.
+2. Silicon feature size getting smaller and smaller (leaving less room for error).
+3. Novel techniques such as stacked layers adds more complexity and manufacturing risks.
+
+## The Implications
+
+I have heard that computers in space shuttles and rockets are built with multiple redundancy module
+to ensure there's no incorrect computation results. But I thought that's because in space everything can happen (cosmic rays, etc)
+and that these systems are specifically designed in a Byzantine fault-tolerant way to handle that.
+So I never thought that this kind of problem could happen in commercial-grade CPUs. 
+
+Though the authors didn't mention the exact CPU models that are affected, or the manufacturer
+of the CPUs, or the architecture of the CPUs. The fact that it happens in commercial-grade CPUs
+is something that I never heard of before and find quite surprising.
+
+Pretty much all computer systems that aren't specialized to handle this level of fault-tolerance (which is the majority) 
+operate under the assumption that the possibility of CPUs producing incorrect results are 
+so minuscule that it's fine to assume that it never happens.
+But this discovery challenges that assumption.
+
+Randomly incorrect computation results in a commercial-grade CPU could have serious implications. 
+Few that I can think of are:
+1. Data rendered permanently inaccessible because of incorrect computation results during the encryption process.
+2. Loss of money in a financial system.
+3. Medical system malfunction causing fatal impact on patients.
+4. Self-driving car accidents.
+5. Military device/weapon malfunction causing fatal consequences.
+
+And a lot more.
+
+And these things has actually happened at Google:
+1. Corruption affecting garbage collectors, causing live objects to be collected.
+2. Corruption affecting database indexes, leading to some queries being non-deterministically corrupted.
+3. Mutexes not functioning correctly causing application crashes.
+4. Corruption in kernel states, causing kernel panics and application malfunctions.
+
+## The Proposed Solution
+
+The mitigation strategies involves efforts at both the hardware and software level.
+
+At the software side, the authors suggests:
+1. Applying the [End-to-End Argument](https://en.wikipedia.org/wiki/End-to-end_principle).
+2. Implementing system support for efficient checkpointing which allows retrying computation
+    in a different core from a checkpoint.
+3. Implementing application-specific detection method to decide whether to commit or
+    retry the computation.
+4. Implementing something like [triple modular redundancy](https://en.wikipedia.org/wiki/Triple_modular_redundancy).
+
+At the hardware level, the authors suggest:
+1. Implementing [design for testing](https://en.wikipedia.org/wiki/Design_for_testing) 
+    and expose the test features to end users.
+2. Implementing continuous verification, where functional units always check their own results.
+3. Go for conservative design for critical functional units, trading some extra area and power for reliability.
+    The authors give an example of IBM z990 which has duplicated pipelines and custom changes to
+    cache controller to make them more resilient.
+
+---
+
+There are a lot more details in the paper that I didn't cover here. 
+I recommend reading the paper if you're interested in this kind of stuff.
+
+I also find some terms quite hard to understand, especially those related to hardware.
+So there's a chance that I misunderstood some parts of the paper. 
+Feel free to correct me if you find any mistakes.
