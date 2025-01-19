@@ -1,32 +1,154 @@
 ---
-title: "Reliable, Scalable, and Maintainable Applications"
-description: "Yes, I actually read DDIA."
-date: "2025-01-12"
+title: "The Three Properties of a Good Data-Intensive System"
+description: "Defining reliability, scalability, and maintainability."
+date: "2025-01-19"
 tags:
   - Book Notes
   - Distributed Systems
   - Designing Data-Intensive Applications
-draft: true
 ---
 
-There's a running joke in the tech community that everyone recommends the book 
+There's a running joke in the tech community that everyone recommends the book
 "Designing Data-Intensive Applications" but no one has actually read it.
 Well I'm here to tell you that I'm built different from y'all snowflakes.
 
 Just kidding.
 
 But seriously, it's a great book. There's a lot of gems in there.
-And just like everyone else, I also recommend this book to anyone who wants to 
+And just like everyone else, I also recommend this book to anyone who wants to
 level up their knowledge on distributed systems. You'll learn a lot from
 the interleaving history of data models, intricacies of different types of storage engines,
-challenges in handling distributed systems, and the trade-offs of different design decisions. 
+challenges in handling distributed systems, and the trade-offs of different design decisions.
 
-In my [last blog post](https://www.danils.xyz/blog/05-mercurial-cores), 
+In my [last blog post](https://www.danils.xyz/blog/05-mercurial-cores),
 I've said that I want to start posting my notes on the papers
-I've read. Actually aside from that I also want to post my notes on books I've read. 
-So because right now I'm in the process of reading DDIA again. I thought it would 
+I've read. Actually aside from that I also want to post my notes on books I've read.
+So because right now I'm in the process of reading DDIA again. I thought it would
 be a good start. Because I already forgot like 90% of the things I've read in the book anyway.
 So posting my notes here would be a good way to solidify my understanding of the concepts.
 
-The plan is to write a blog post for each chapter of the book. Which will amount
-to 12 blog posts in total. Hopefully I can finish this series before the end of the year.
+---
+
+## Data-Intensive vs Compute-Intensive Systems
+
+The book focuses on data-intensive applications. These are applications that are
+IO-bound rather than CPU-bound. Meaning they are more concerned with the size of the data,
+the complexity of the data, and the speed at which it is changing. Rather than
+the speed of the CPU.
+
+For example, a Reddit-like web application with similar scale is a data-intensive application.
+Because it mostly only involves reading and writing data to the database. Albeit at a large scale.
+Typically most of the processing time is spent on IO operations (storing data to database, retrieving them, etc.).
+
+While something like a real-time video encoding application is a compute-intensive application.
+It doesn't do much of storing and retrieving data. Instead the operations it's running
+involves a lot of CPU computations and the speed is dependent on how powerful the CPU is.
+
+## The Three Properties of a Good Data-Intensive System
+
+### Reliability
+
+In the most basic sense, reliability means the system continues to work correctly
+even when things go wrong. Which includes the following scenarios:
+
+- The system continues to serve requests even when some components are failing.
+- The system can tolerate human errors.
+- The system can recover from human errors.
+
+It basically means that the system is dependable to do what it's supposed to do correctly
+every time needed. This is the foundational property of a good system, any type of system I would say.
+If a system is not reliable, one can easily lose customers, data, reputation, and ultimately money.
+In a more high stake environment, unreliable system can even cause loss of lives.
+
+Imagine if you're using a banking application and you can't transfer money for a week because their datacenter caught fire.
+Or your data gets lost because their database gets corrupted. Or you frequently can't withdraw money from the ATM
+because their system keeps breaking. You will certainly switch to another bank because you deemed their
+system to be unreliable.
+
+Extrapolate that to a more high stake environment like a hospital. Imagine if the system that
+monitors the patient's vital signs is unreliable. It could cause the patient to die because the system
+didn't alert the nurse when the patient's vital signs are deteriorating.
+
+There are a number of techniques to make a system reliable, such as:
+
+1. Horizontal scaling
+2. Redundancy
+3. Failover
+4. Monitoring
+5. Disaster recovery plan
+
+It's not an exhaustive list, and each technique may apply to some systems but not to others.
+It depends on the requirements of the system. But all in all, the goal is to make the system
+dependable to do what it's supposed to do correctly every time needed. So every technique
+that helps achieve that goal is usable.
+
+### Scalability
+
+I think everyone knows what scalability means. It's the ability of a system to cope
+with increased load. But what kind of load are we talking about? Because a system can grow
+in a lot of different ways. It could be that after a massively successful marketing campaign,
+the number of daily active users increases. Or it could be that the amount of data
+the system needs to store increases. Or it could be that the amount scheduled tasks the system needs to execute
+increases. Or it could be that the number of read requests the system
+needs to handle increases. Or it could be the number of write requests. And so on and so forth.
+
+Those are called the load parameters. Basically it's the thing that increases in a certain scalability scenario.
+And when talking about whether a system is scalable or not, we need to be specific about the load parameters
+we're talking about. Basically the question shouldn't be: "Is the system scalable?" but rather
+it should be: "How does the system behave when the chosen load parameters increase?"
+
+Asking "Is the system scalable?" is not very useful, because handling an increase in the number of read
+requests is different from handling an increase in the number of write requests.
+And handling an increase in the number of daily active users is different from handling an increase in the
+amount of data the system needs to store. So we need to be more specific.
+
+### Maintainability
+
+A software system is not done when it's in production. Because it still needs to be maintained.
+And the majority of the system's lifetime is spent in the maintenance phase. So it's important
+to make this phase as easy as possible. And that's what maintainability is about.
+
+Martin Kleppmann defines maintainability with 3 pillars:
+
+#### Operability
+
+After the system is deployed, probably someone else is going to operate it. While some organizations implement
+a "you build it, you run it" policy, most organizations still have a dedicated operations team. So it's important
+to make the system easy to operate.
+
+To do this, we can utilize a number of different techniques, such as:
+
+1. Provide visibility into the runtime behavior of the system.
+2. Provide good support for automation and integration with standard tools.
+3. Avoid dependency on individual machines.
+4. Provide good documentation and an easy-to-understand operational model.
+5. Provide good default behavior, but also allow administrators to override defaults when needed.
+6. Provide the ability to self-heal where appropriate, but also give administrators manual control when needed.
+7. Exhibit predictable behavior, minimizing surprises.
+
+#### Simplicity
+
+Everybody likes systems that are easy to understand. It's easier to reason about, easier to debug, and easier to maintain.
+In a fast-paced environment, an **unnecessarily complex** system hinders the ability to move fast because changes are
+harder to make. I emphasize the word "unnecessarily" because sometimes complexity is necessary. But most of the time,
+we should strive to make the system as simple as possible. And that's what simplicity is about.
+
+To keep a system simple, we can utilize a number of different techniques, such as:
+
+1. Using abstractions to hide complexity
+2. Using well-known patterns and techniques
+3. Provide good documentation
+4. Provide good tooling
+
+#### Evolvability
+
+A system that's hard to change is very frustrating to deal with. You touch one part of the system and another part breaks.
+It's like playing whack-a-mole. So making a system easy to change is very important for the sanity of the developers.
+Especially in a fast-paced environment where requirements change frequently.
+
+To make a system evolvable, we can utilize a number of different techniques, such as:
+
+1. TDD
+2. Avoid tight coupling between components
+3. Make the system modular
+4. Learn to be comfortable with refactoring, make it part of the daily life
