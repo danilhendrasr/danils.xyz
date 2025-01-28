@@ -15,6 +15,8 @@ import react from "@astrojs/react";
 
 const render = (title: string, subtitle: string, date: string) => ({
   type: "div",
+  key: "",
+  children: [],
   props: {
     style: {
       height: "100%",
