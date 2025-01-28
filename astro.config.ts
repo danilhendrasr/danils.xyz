@@ -11,6 +11,8 @@ import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
 import { format, parse } from "date-fns";
 
+import react from "@astrojs/react";
+
 const render = (title: string, subtitle: string, date: string) => ({
   type: "div",
   props: {
@@ -157,7 +159,7 @@ const og = (): AstroIntegration => ({
 // https://astro.build/config
 export default defineConfig({
   site: "https://danils.xyz",
-  integrations: [tailwind(), sitemap(), mdx(), pagefind(), og()],
+  integrations: [tailwind(), sitemap(), mdx(), pagefind(), og(), react()],
   markdown: {
     shikiConfig: {
       theme: "css-variables",
