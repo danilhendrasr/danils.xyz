@@ -6,23 +6,16 @@ interface Props {
 const { url } = Astro.props;
 ---
 
-<section>
-  <video autoplay="autoplay" playsinline muted loop controls>
+<section class="w-full">
+  <video
+    class="mx-auto my-0 block h-auto w-full max-w-[800px]"
+    autoplay="autoplay"
+    playsinline
+    muted
+    loop
+    controls
+  >
     <source src={url} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 </section>
-
-<style>
-  video {
-    width: 100%;
-    max-width: 800px;
-    height: auto;
-    margin: 0 auto;
-    display: block;
-  }
-
-  section {
-    padding: 2rem;
-  }
-</style>
