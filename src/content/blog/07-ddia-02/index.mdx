@@ -56,10 +56,10 @@ which returns the newer value (7) instead of the older value (3).
 This design has several advantages over page-oriented storage:
 
 1. **Sequential Write**: Writing data sequentially is faster than random writes.
-2. **Crash Recovery**: Since the log file is append-only, it's easy to recover from a crash.
-3. **Compaction**: Old data can be removed by merging the log files into a new file.
-4. **Compression**: Since data is written sequentially, it's easier to compress the data.
-5. **Snapshot**: Snapshots can be taken by copying the log file.
+2. **Compaction**: Old data can be removed by merging the log files into a
+   new file, thus space can be reclaimed without requiring additional maintenance.
+3. **Concurrency**: Since the log file is append-only, it's easier to handle concurrent writes.
+4. **No In-place Updates**: Reduces data corruption risks during writes.
 
 ### Log Segments and Compaction
 
@@ -132,8 +132,9 @@ When data is flushed to disk, notice that the data is sorted by keys.
 SSTable has several advantages over the basic log-structured storage:
 
 1. **Faster Reads**: Since the data is sorted by keys, reads can be faster.
-2. **Less Disk Usage**: Since the data is sorted by keys, the index can be more efficient.
-3. **Crash Recovery**: The memtable can be replayed to recover the data.
+2. **Range Queries**: Range queries can be done more efficiently.
+3. **More Efficient Compaction**: Since the data is sorted by keys and
+   there's no update and tombstone entries, the merging can be done more efficiently.
 
 But what happens when the system crashes before the memtable is flushed to disk?
 
