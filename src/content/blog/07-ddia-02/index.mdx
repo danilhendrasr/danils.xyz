@@ -1,35 +1,38 @@
 ---
 title: "Log-Structured Storage, Visualized"
 description: "Better understanding of log-structured storage."
-date: "2025-01-28"
+date: "2025-02-01"
 tags:
   - Book Notes
   - Distributed Systems
   - Designing Data-Intensive Applications
-draft: true
 ---
 
 My [last blog post](https://danils.xyz/blog/06-ddia-01) was about the three properties of a good data-intensive system.
 That was from the first chapter of the book. Now I'm jumping to the 3rd chapter which is about storage and retrieval.
 I don't make post about the 2nd chapter because in my opinion talking about the history of SQL and
-the different data models and query languages is not that interesting.
+the different data models and query languages is not really interesting.
 
-## The Two Worlds
+## Log-structured and Page-oriented Storage
 
 There are many different databases with many different storage engines.
-But this book focuses on two categories of storage engines: **page-oriented** and **log-structured**.
+But DDIA focuses on two categories of storage engines: **page-oriented** and **log-structured**.
 
 Page-oriented storage engines are the traditional way of storing data in most relational databases.
 They divide the data into small units of storage called **pages**, with each page typically sized at 4KB.
 This is used by databases like MySQL, PostgreSQL, and Oracle.
 
 While log-structured storage engines are a newer way of storing data.
+It's gaining rapid adoption in the database world due to its advantages in write-heavy workloads.
 In this model, data is stored in an append-only sequence of **segments**.
 This is used by databases like HBase, Cassandra, and LevelDB.
 
-In this post, I'll be explaining how each of these storage engines work in general.
+In this post, I'll talk only about log-structured storage even though chapter 3 of DDIA
+contains a lot more than that. This is because I created many animations for this post
+and it would be too much work to create animations for page-oriented storage too.
+So I'll talk about page-oriented storage in another post.
 
-## Log-structured Storage
+## Basic Log-structured Storage
 
 The basic idea of log-structured storage is to write new data sequentially to disk.
 This is done by only doing append operations either for insert, update, or delete.
@@ -38,7 +41,7 @@ import Video from "../../../components/Video.astro";
 
 <Video url={"/blogs/07/basic.mp4"} />
 
-As shown in the animation above, for insert operation the new data is simply appended to the end of the log file.
+For insert operation the new data is simply appended to the end of the log file.
 For update operation, a new version of the data is appended to the log file without modifying the old version.
 For delete operations, a tombstone entry is appended to the log file, which marks the data as deleted.
 
@@ -46,7 +49,11 @@ When handling read operations, the storage engine will look for the latest versi
 
 <Video url={"/blogs/07/read-queries.mp4"} />
 
-This design several advantages over page-oriented storage:
+In the animation above, notice that even though b has an older value, but because it's marked as deleted
+by a newer tombstone entry, the query returns not found. The same goes for a,
+which returns the newer value (7) instead of the older value (3).
+
+This design has several advantages over page-oriented storage:
 
 1. **Sequential Write**: Writing data sequentially is faster than random writes.
 2. **Crash Recovery**: Since the log file is append-only, it's easy to recover from a crash.
@@ -63,41 +70,101 @@ Yes, it will. But people have come up with a solution for that.
 In a log-structured storage, the log is divided into segments. Each segment is a separate file,
 with one segment handling the current writes. We'll call this the **active segment**.
 When this active segment reaches a certain size or other criteria,
-it will get "stashed away" as an immutable segment and a new active segment will be created.
+it will get "stashed away" as an **immutable segment** and a new active segment will be created.
 This process is then repeated.
 
 <Video url={"/blogs/07/log-segments.mp4"} />
 
-Now that the storage have lingering segments, it needs to do something about them to keep disk usage in check.
+Now that there are lingering segments, the storage needs to do something about them to keep disk usage in check.
 So in the background, there will be a process that will merge the old segments into a single file
 and then delete the old segments. This process is called **compaction**.
 
 <Video url={"/blogs/07/compaction.mp4"} />
 
+During the compaction process, the storage engine will only preserve the latest version of the data.
+This way the new segment will only contain a small subset of the data from the old segments. It will
+also delete values which latest version is a tombstone.
+
+In the animation above, even though d has an entry in the oldest segment with value (3), the one that gets preserved
+in the new segment is the one from the newest segment with value (1). And notice that c doesn't get preserved,
+since the latest version of c is a tombstone.
+
 ### Indexing
 
 Alright, that's fine and all. But how do log-structured storage engines find the data they need?
-Do they do linear search through the log every time?
+Do they do linear search through the segments every time?
 
-No, they don't. Just like in page-oriented storage, log-structured storage engines also have indexes.
+No, they don't. Just like in page-oriented storage, log-structured storage engines also have a way to index data.
 The most basic form of indexing is to keep an in-memory index of the keys and their offsets in the log files.
 Each segment has its own index.
 
 <Video url={"/blogs/07/indexing.mp4"} />
 
+In the animation above, assume each entry in each segment has the size of 1 byte.
+The indexes that are generated have the key and the byte offset of the entry in the segment.
+So something like `f -> 2` means that the entry with key f starts from byte 2 in the segment.
+
+When a read operation is performed, the storage engine will first look at the in-memory index.
+If the key is not found, it will look at the next segment's index, and so on.
+Some optimizations can also be done to make it faster, such as using bloom filters.
+
+But the downside of this indexing mechanism is that it has to keep every key and its offset in the index.
+So if the dataset is large, the index will also be large.
+
 ## SSTable
 
-SSTable is more advanced version of log-structured storage which came from Google's BigTable paper.
-It stands for **Sorted String Table**. Well I'm not sure if it's still can be categorized as log-structured storage
-since the mechanism is a bit different.
+SSTable is more advanced version of the basic log-structured storage.
+It stands for **Sorted String Table** and came from Google's [BigTable paper](https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf).
+In an SSTable, data is still stored in log files, but on-disk they are sorted by keys.
 
-In an SSTable, data is still stored in log files. But on-disk, they are sorted by keys.
-But wouldn't that make the benefit of sequential write go away? Not really.
-The data is not directly stored in the log files. Instead, data are first written to an in-memory
-self-balancing data structure called **memtable**.
-This memtable will then get flushed to disk every time certain criteria is met.
+But wouldn't that make the benefit of sequential write go away?
 
-_Animation here_
+Yes, so to overcome that the data are not directly stored in the log files.
+Instead, data are first written to an in-memory data structure called **memtable**.
+Typically a self-balancing data structure is used for this, such as a skip lists or red-black tree.
+This memtable will then get flushed to disk every time certain criteria is met such as
+memtable size or time since the latest flush.
 
-The advantage of SSTable over regular log-structured storage is that it's easier to read data.
-And indexing is easier since the data is sorted by keys.
+<Video url={"/blogs/07/memtable-and-wal.mp4"} />
+
+When data is flushed to disk, notice that the data is sorted by keys.
+
+SSTable has several advantages over the basic log-structured storage:
+
+1. **Faster Reads**: Since the data is sorted by keys, reads can be faster.
+2. **Less Disk Usage**: Since the data is sorted by keys, the index can be more efficient.
+3. **Crash Recovery**: The memtable can be replayed to recover the data.
+
+But what happens when the system crashes before the memtable is flushed to disk?
+
+Aside from writing to the memtable, typically the storage engine will also write to a **write-ahead log (WAL)**.
+It's an append-only log file that records every write operation, basically just like log file in basic log-structured storage.
+Since sequential writes are fast, writing to the WAL is less of a risk.
+When the system crashes, the storage engine can replay the WAL to recover the memtable.
+
+Aside from having a memtable and a write-ahead log, there's not much difference between SSTable and
+the basic log-structured storage.
+SSTable also has the concept of segments and compaction with basically the same rules and mechanism.
+
+That is, except for the indexing part.
+
+### Indexing
+
+Since the data is sorted by keys, SSTable can use a more efficient indexing mechanism.
+Instead of having to have _every_ key and its offset in the log file, SSTable can just utilize
+the property of the sorted data and store only _some_ of the keys and their offsets.
+This is called a **sparse indexing**.
+
+<Video url={"/blogs/07/sstable-indexing.mp4"} />
+
+Notice that to search for the key `t`, the storage don't need to find `t` directly in the index.
+It just needs to find the nearest key, that is `r`, and then linearly search from there.
+
+This indexing technique also has the benefits that it doesn't get quite as large as basic hash
+indexing technique previously mentioned.
+
+---
+
+That's it for this post. Hopefully with this I've solidified my understanding of the log-structured storage.
+Note that this post is only based on my notes and understanding of the book.
+Please correct me if I get something wrong about log-structured storage.
