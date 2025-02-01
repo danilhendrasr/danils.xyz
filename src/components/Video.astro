@@ -7,7 +7,7 @@ const { url } = Astro.props;
 ---
 
 <section>
-  <video controls>
+  <video autoplay="autoplay" playsinline muted loop controls>
     <source src={url} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
