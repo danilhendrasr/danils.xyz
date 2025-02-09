@@ -1,0 +1,104 @@
+---
+title: "Postgres' Storage and Indexing, Visualized"
+description: "Pages, heap files, TOASTs, and indexing."
+date: "2025-02-14"
+draft: true
+tags:
+  - Book Notes
+  - PostgreSQL
+  - Designing Data-Intensive Applications
+---
+
+In my [last post](https://danils.xyz/blog/07-ddia-02) I talked about log-structured storage and
+SSTables. This post is still about chapter 3, and it's not gonna be the last either. Because
+chapter 3 covers a lot of interesting things. In this post I'm gonna talk about PostgreSQL,
+how's the storage mechanism works, how are data stored, how indexing works, and more.
+
+---
+
+In the book, at a glance it wasn't really obvious how to draw a comparison between log-structured storage and page-oriented
+storage because the way Martin Kleppmann writes the material is he talked about each paradigm at a different level.
+For log-structured storage, he talks at the data layout level, he explains clearly how data are laid out on disk.
+But for page-oriented storage he only talks at the indexing level without ever touching how data are laid out on disk.
+It confused me a bit at first before I realize this.
+
+It's not really a problem, but I thought it's somewhat unfortunate given the depth of the book that it doesn't
+include such material (if I remember correctly there's no such thing either in the later chapters). So this post
+is also my attempt to bridge that gap. I'm gonna talk about page-oriented storage at the same level as how I talked
+about the log-structured storage in the previous post. I decided to pick Postgres as the study case since it's so
+popular nowadays. Fortunately, Postgres has an elaborate documentation explaining the internal working of their
+storage mechanism.
+
+## Pages
+
+The most basic unit of storage in Postgres is called a **page** or a **block** (both means the same thing
+and can be used interchangeably). With each page by default having 8KB of size.
+Each page contains the data of multiple rows, so it's basically a grouping mechanism.
+
+When it needs to read a row, Postgres determines in which page the desired row is
+located at, and fetch the whole page. So even we only want 1 row (A), it will fetch every row
+in the same page as row A. The same goes for writing, it overwrites the whole page.
+This is where the term "page-oriented storage" comes from.
+Most major RDBMSs uses this paradigm too.
+
+Each page has the following structure:
+
+_Animation here_
+
+It's basically divided into 3 parts, the page header, the row pointers, and the rows themselves.
+
+The first question one might ask given this information is probably: "Why split the data into pages?"
+
+There are several reasons to this, the following are some of it:
+
+1. **More efficient disk I/O**:
+2. **Fits B-Tree indexing nicely**:
+3. **Better data locality**:
+
+## TOASTs
+
+A row in Postgres is not allowed to span multiple pages. But what happens if there's value so large
+that it makes the row overflows the 8KB page limit?
+
+That's where the TOAST comes in.
+
+TOAST stands for "The Oversized-Attribute Storage Technique". The idea to offload the big values of
+a row into a separate storage mechanism. When a value is TOASTed, the original row in the page
+only contains a reference to it. This prevents a row to span multiple pages.
+
+Not every built-in data types is TOASTable, here's some examples of the TOASTable ones:
+
+1. `json` and `jsonb`
+2. Large text strings (`TEXT`s and `VARCHAR`s)
+3. `bytea`
+4. Geometric data like path and polygon
+
+There are 2 types of TOASTs.
+
+### On-Disk TOAST Storage
+
+### In-Memory TOAST Storage
+
+In-memory TOAST is only used for short-lived values. According to Postgres' documentation, this was originally
+created only as a proof of concept but has stayed since then with limited use.
+
+## Heap Files
+
+Right, but where do these pages located at?
+
+Postgres stores each table's data in something called **heap files**. We can easily determine
+where a table's heap file is located by doing:
+
+1. Step 1
+2. Step 2
+3. Step 3
+
+Each table gets a dedicated heap file. Each heap file is made up of segments with the default
+maximum size of 1GB per segment. So when a segment reaches this size, a new segment is added to the heap file.
+The pages that I talked about are stored in these segments.
+
+## B-Tree Indexing
+
+Postgres actually supports multiple types of indexes, from hash indexing, GIST, to B-Tree indexing.
+But I'll only talk about B-Tree indexing because this is what's typically associated by default
+to page-oriented RDBMSs and because this is the one Martin Kleppmann talks about in Chapter 3 of DDIA.
